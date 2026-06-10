@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block body_class %}template-heritageobjectindexpage{% endblock %}
+
+{% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<style>
+    #objects-map {
+        height: 500px;
+        width: 100%;
+        border-radius: 0.375rem;
+        margin-bottom: 2rem;
+    }
+
+    .object-card:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .map-controls {
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .map-controls .btn {
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+{% endblock %}
+
+{% block content %}
+{% include "home/includes/header.html" %}
+
+<main class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>{{ page.title }}</h1>
+
+            {% if page.intro %}
+            <div class="mb-4">{{ page.intro|richtext }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Карта с метками всех объектов -->
+    {% if heritage_objects %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h4>Карта объектов</h4>
+            <div class="map-controls">
+                <button type="button" id="fit-all-btn" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-arrows-fullscreen"></i> Показать все метки
+                </button>
+                <span id="markers-count" class="badge bg-secondary align-self-center"></span>
+            </div>
+            <div id="objects-map"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Список объектов -->
+    <div class="row">
+        <div class="col-12">
+            <h4>Список объектов</h4>
+
+            {% if heritage_objects %}
+            <div class="row">
+                {% for p in heritage_objects %}
+                {% with p.specific as obj %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 object-card">
+                        {% if obj.gallery %}
+                        <a href="{% pageurl p %}">
+                            {% for img in obj.gallery %}
+                            {% if forloop.first %}
+                            {% image img.value fill-400x250 class="card-img-top img-fluid" %}
+                            {% endif %}
+                            {% endfor %}
+                        </a>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% pageurl p %}" class="text-decoration-none">{{ p.title }}</a>
+                            </h5>
+
+                            {% if obj.address %}
+                            <p class="card-text text-muted small">
+                                <i class="bi bi-geo-alt"></i> {{ obj.address }}
+                            </p>
+                            {% endif %}
+
+                            {% if obj.phone %}
+                            <p class="card-text text-muted small">
+                                <i class="bi bi-telephone"></i> {{ obj.phone }}
+                            </p>
+                            {% endif %}
+
+                            {% if obj.year_built %}
+                            <p class="card-text text-muted small">
+                                <i class="bi bi-calendar"></i> {{ obj.year_built }}
+                            </p>
+                            {% endif %}
+
+                            {% if obj.architectural_style %}
+                            <p class="card-text text-muted small">
+                                <i class="bi bi-bank"></i> {{ obj.architectural_style }}
+                            </p>
+                            {% endif %}
+
+                            {% if obj.description %}
+                            <p class="card-text">{{ obj.description|truncatewords:30 }}</p>
+                            {% endif %}
+
+                            <a href="{% pageurl p %}" class="btn btn-primary btn-sm">Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                Объекты пока не добавлены.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+{% include "home/includes/footer.html" %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        {% if heritage_objects %}
+        // Инициализация карты
+        var map = L.map('objects-map', {
+            attributionControl: false,
+            worldCopyJump: true
+        });
+
+        // Добавляем слой карты OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Массив маркеров
+        var markers = [];
+        {% for p in heritage_objects %}
+        {% with p.specific as obj %}
+        {% if obj.latitude and obj.longitude %}
+        markers.push({
+            lat: {{ obj.latitude }},
+            lng: {{ obj.longitude }},
+            title: "{{ p.title|escapejs }}",
+            address: "{{ obj.address|escapejs }}",
+            phone: "{{ obj.phone|escapejs }}",
+            url: "{% pageurl p %}"
+        });
+        {% endif %}
+        {% endwith %}
+        {% endfor %}
+
+        // Обновляем счетчик меток
+        var countBadge = document.getElementById('markers-count');
+        if (countBadge) {
+            countBadge.textContent = 'Меток: ' + markers.length;
+        }
+
+        // Функция для подгонки карты под все маркеры
+        function fitMapToMarkers() {
+            if (markers.length === 0) {
+                // Значение по умолчанию - Фергана
+                map.setView([40.375, 71.77], 13);
+                return;
+            }
+
+            if (markers.length === 1) {
+                // Если только одна метка - центрируем на ней с разумным масштабом
+                var single = markers[0];
+                map.setView([single.lat, single.lng], 13);
+                return;
+            }
+
+            // Вычисляем границы по всем маркерам
+            var bounds = L.latLngBounds([]);
+            markers.forEach(function (marker) {
+                bounds.extend([marker.lat, marker.lng]);
+            });
+
+            // Проверяем, нужно ли "разворачивать" границы (если метки на противоположных сторонах мира)
+            // Например, Москва и Архангельск - близко, но если метки разбросаны по миру - скорректируем
+            var sw = bounds.getSouthWest();
+            var ne = bounds.getNorthEast();
+            var lngSpan = ne.lng - sw.lng;
+
+            // Если границы пересекают 180-ю долготу (метки разбросаны по миру)
+            if (lngSpan > 180) {
+                // Пересчитываем через "западные" координаты
+                var altBounds = L.latLngBounds([]);
+                markers.forEach(function (marker) {
+                    var adjLng = marker.lng < 0 ? marker.lng + 360 : marker.lng;
+                    altBounds.extend([marker.lat, adjLng]);
+                });
+                bounds = altBounds;
+            }
+
+            // Подгоняем карту под границы с отступами
+            map.fitBounds(bounds, {
+                padding: [50, 50],
+                paddingTopLeft: [50, 50],
+                paddingBottomRight: [50, 50],
+                maxZoom: 15  // Ограничиваем максимальный зум, чтобы близко расположенные метки не увеличивались слишком сильно
+            });
+        }
+
+        // Инициализация кластеризации маркеров
+        var markerClusterGroup = L.markerClusterGroup({
+            maxClusterRadius: 80,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: true
+        });
+
+        // Добавление маркеров на карту
+        markers.forEach(function (marker) {
+            var popupContent = '<strong>' + marker.title + '</strong><br>';
+            if (marker.address) popupContent += marker.address + '<br>';
+            if (marker.phone) popupContent += marker.phone + '<br>';
+            popupContent += '<a href="' + marker.url + '">Подробнее</a>';
+
+            var leafletMarker = L.marker([marker.lat, marker.lng])
+                .bindPopup(popupContent);
+
+            markerClusterGroup.addLayer(leafletMarker);
+        });
+
+        // Добавляем кластеры на карту
+        map.addLayer(markerClusterGroup);
+
+        // Подгоняем карту под все маркеры
+        fitMapToMarkers();
+
+        // Кнопка "Показать все метки"
+        var fitBtn = document.getElementById('fit-all-btn');
+        if (fitBtn) {
+            fitBtn.addEventListener('click', function () {
+                fitMapToMarkers();
+            });
+        }
+
+        // Исправление проблемы с отображением при загрузке
+        setTimeout(function () {
+            map.invalidateSize();
+            // Повторная подгонка после полной загрузки контейнера
+            fitMapToMarkers();
+        }, 200);
+
+        // Перерисовка карты при изменении размера окна
+        var resizeTimer;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function () {
+                map.invalidateSize();
+            }, 200);
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

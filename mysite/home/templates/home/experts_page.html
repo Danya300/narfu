@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block body_class %}template-expertspage{% endblock %}
+
+{% block content %}
+{% include "home/includes/header.html" %}
+
+<main class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h1>{{ page.title }}</h1>
+
+            {% if page.intro %}
+            <div class="intro lead mb-4">
+                {{ page.intro|richtext }}
+            </div>
+            {% endif %}
+
+            <div class="experts-list row">
+                {% for block in page.content %}
+                {% if block.block_type == 'expert' %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        {% if block.value.photo %}
+                        {% image block.value.photo width-300 class="card-img-top" %}
+                        {% else %}
+                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                            style="height: 200px;">
+                            <span class="text-white">Фото отсутствует</span>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ block.value.name }}</h5>
+                            {% if block.value.position %}
+                            <p class="text-muted mb-2">{{ block.value.position }}</p>
+                            {% endif %}
+                            {% if block.value.bio %}
+                            <p class="card-text">{{ block.value.bio }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% elif block.block_type == 'heading' %}
+                <div class="col-12">
+                    <h2>{{ block.value }}</h2>
+                </div>
+                {% elif block.block_type == 'paragraph' %}
+                <div class="col-12">
+                    {{ block.value|richtext }}
+                </div>
+                {% elif block.block_type == 'image' %}
+                <div class="col-12 mb-4">
+                    {% image block.value width-800 class="img-fluid rounded" %}
+                </div>
+                {% elif block.block_type == 'table' %}
+                <div class="col-12 mb-4">
+                    {% include_block block %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</main>
+
+{% include "home/includes/footer.html" %}
+{% endblock %}

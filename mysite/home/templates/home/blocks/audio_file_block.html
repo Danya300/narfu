@@ -1,0 +1,16 @@
+{% load wagtailcore_tags %}
+
+<div class="audio-file-block my-4">
+    {% if value.title %}
+    <h3>{{ value.title }}</h3>
+    {% endif %}
+
+    <audio controls preload="metadata" class="w-100">
+        <source src="{{ value.audio_file.url }}" type="{{ value.audio_file.content_type|default:'audio/mpeg' }}">
+        Ваш браузер аудио не поддерживает.
+    </audio>
+
+    {% if value.description %}
+    <p class="text-muted mt-2">{{ value.description }}</p>
+    {% endif %}
+</div>

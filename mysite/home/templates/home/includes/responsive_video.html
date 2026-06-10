@@ -1,0 +1,81 @@
+{# Универсальный адаптивный контейнер для видео с YouTube, Rutube, VK Video #}
+{# Использование: {% include "home/includes/responsive_video.html" with video_html=block.value.video_embed %} #}
+
+{% if video_html %}
+<div class="responsive-video-wrapper">
+    {{ video_html|safe }}
+</div>
+{% endif %}
+
+<style>
+    /* Адаптивный контейнер для iframe с YouTube, Rutube, VK Video */
+    .responsive-video-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        /* Соотношение сторон 16:9 */
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+        background: #000;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin: 1rem 0;
+    }
+
+    .responsive-video-wrapper iframe,
+    .responsive-video-wrapper video,
+    .responsive-video-wrapper embed,
+    .responsive-video-wrapper object {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        border: 0 !important;
+        border-radius: 0.5rem;
+    }
+
+    /* Принудительное переопределение размеров для конкретных провайдеров */
+    .responsive-video-wrapper iframe[src*="youtube.com"],
+    .responsive-video-wrapper iframe[src*="youtube-nocookie.com"] {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .responsive-video-wrapper iframe[src*="rutube.ru"] {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .responsive-video-wrapper iframe[src*="vk.com"],
+    .responsive-video-wrapper iframe[src*="vk.ru"],
+    .responsive-video-wrapper iframe[src*="vkvideo"] {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* На больших экранах — ограничиваем ширину для удобства просмотра */
+    @media (min-width: 1200px) {
+        .responsive-video-wrapper {
+            max-width: 960px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+
+    /* На планшетах — полная ширина с небольшими отступами */
+    @media (min-width: 768px) and (max-width: 1199px) {
+        .responsive-video-wrapper {
+            max-width: 100%;
+        }
+    }
+
+    /* На смартфонах — полная ширина, плотнее */
+    @media (max-width: 767px) {
+        .responsive-video-wrapper {
+            border-radius: 0.25rem;
+            margin: 0.5rem 0;
+        }
+    }
+</style>

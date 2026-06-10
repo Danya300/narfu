@@ -1,0 +1,19 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "mysite.settings.dev"
+testpaths = [
+    "mysite/home/tests.py",
+    "mysite/heritage_objects/tests.py",
+]
+
+[project]
+name = "narfu"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.14"
+dependencies = [
+    "Django>=6,<6.1",
+    "wagtail==7.4.1",
+    "granian>=1.0",
+    "daphne",
+    "locust==2.44.1",
+]

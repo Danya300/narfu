@@ -1,0 +1,14 @@
+{% load wagtailcore_tags %}
+<div class="video-block mb-4">
+    {% if self.title %}
+    <h4>{{ self.title }}</h4>
+    {% endif %}
+
+    {% if self.description %}
+    <div class="mb-3">{{ self.description|richtext }}</div>
+    {% endif %}
+
+    {% if self.video_embed %}
+    {% include "home/includes/responsive_video.html" with video_html=self.video_embed %}
+    {% endif %}
+</div>

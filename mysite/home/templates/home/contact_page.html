@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block body_class %}template-contactpage{% endblock %}
+
+{% block content %}
+{% include "home/includes/header.html" %}
+
+<main class="container my-5">
+    <div class="row">
+        <div class="col-md-6">
+            <h1>{{ page.title }}</h1>
+
+            <div class="contact-info mb-4">
+                {% if page.address %}
+                <div class="mb-3">
+                    <h5>Адрес:</h5>
+                    <p>{{ page.address }}</p>
+                </div>
+                {% endif %}
+
+                {% if page.phone %}
+                <div class="mb-3">
+                    <h5>Телефон:</h5>
+                    <p><a href="tel:{{ page.phone }}">{{ page.phone }}</a></p>
+                </div>
+                {% endif %}
+
+                {% if page.email %}
+                <div class="mb-3">
+                    <h5>Email:</h5>
+                    <p><a href="mailto:{{ page.email }}">{{ page.email }}</a></p>
+                </div>
+                {% endif %}
+            </div>
+
+            {% for block in page.content %}
+            {% if block.block_type == 'heading' %}
+            <h2>{{ block.value }}</h2>
+            {% elif block.block_type == 'paragraph' %}
+            <div class="mb-4">{{ block.value|richtext }}</div>
+            {% elif block.block_type == 'contact_info' %}
+            <div class="contact-info-block mb-3">
+                <strong>{{ block.value.title }}:</strong> {{ block.value.value }}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+            {% if page.map_embed %}
+            <div class="map_embed mb-4">
+                {{ page.map_embed|safe }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+{% include "home/includes/footer.html" %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% load wagtailimages_tags wagtailcore_tags %}
+
+<div class="video-file-block my-4">
+    {% if value.title %}
+    <h3>{{ value.title }}</h3>
+    {% endif %}
+
+    <div class="video-responsive ratio ratio-16x9 mb-3">
+        <video controls preload="metadata" class="w-100 h-100" playsinline {% if value.poster %}poster="{{ value.poster.url }}" {% endif %}>
+            <source src="{{ value.video_file.url }}" type="{{ value.video_file.content_type|default:'video/mp4' }}">
+            Ваш браузер видео не поддерживает.
+        </video>
+    </div>
+
+    {% if value.description %}
+    <p class="text-muted mt-2">{{ value.description }}</p>
+    {% endif %}
+</div>

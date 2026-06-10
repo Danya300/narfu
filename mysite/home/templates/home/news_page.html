@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block body_class %}template-newspage{% endblock %}
+
+{% block content %}
+{% include "home/includes/header.html" %}
+
+<main class="container my-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% pageurl page.get_parent %}">Новости</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ page.title }}</li>
+        </ol>
+    </nav>
+
+    <article>
+        <header class="mb-4">
+            <h1>{{ page.title }}</h1>
+            <small class="text-muted">Дата публикации: {{ page.date|date:"d.m.Y" }}</small>
+        </header>
+
+        {% if page.intro %}
+        <div class="intro lead mb-4">
+            {{ page.intro|richtext }}
+        </div>
+        {% endif %}
+
+        {% for block in page.content %}
+        {% if block.block_type == 'heading' %}
+        <h2>{{ block.value }}</h2>
+        {% elif block.block_type == 'paragraph' %}
+        <div class="mb-4">{{ block.value|richtext }}</div>
+        {% elif block.block_type == 'image' %}
+        <div class="mb-4">
+            {% image block.value width-800 class="img-fluid rounded" %}
+        </div>
+        {% elif block.block_type == 'video' %}
+        <div class="video-block my-4">
+            <h3>{{ block.value.title }}</h3>
+            {% include "home/includes/responsive_video.html" with video_html=block.value.video_embed %}
+            {% if block.value.description %}
+            <p class="text-muted">{{ block.value.description }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endfor %}
+    </article>
+
+    <hr class="my-4">
+
+    <div class="mb-4">
+        <a href="{% pageurl page.get_parent %}" class="btn btn-outline-secondary">&larr; К списку новостей</a>
+    </div>
+</main>
+
+{% include "home/includes/footer.html" %}
+{% endblock %}

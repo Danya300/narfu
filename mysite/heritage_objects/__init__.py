@@ -1,0 +1,1 @@
+default_app_config = 'heritage_objects.apps.HeritageObjectsConfig'

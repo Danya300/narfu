@@ -1,0 +1,164 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+    AttributeFontSize 12
+    MethodFontSize 12
+}
+skinparam stereotypeFontSize 12
+skinparam headerFontSize 14
+
+title Class Diagram: Django + Wagtail (A4 Compact)
+
+' === WAGTAIL BASE CLASS ===
+abstract class "wagtail.models.Page" as BasePage {
+    + title : CharField
+    + slug : SlugField
+    + live : Boolean
+    + first_published_at : DateTime
+    + serve(request)
+    + get_url_parts()
+}
+
+' === HOME APP PAGES ===
+package "home.models" {
+    class HomePage {
+        + content : StreamField
+        + get_context()
+    }
+    
+    class AboutPage {
+        + intro : TextField
+        + content : StreamField
+    }
+
+    class NewsIndexPage {
+        + intro : TextField
+        + get_context()
+        __
+        <i>returns: news_pages</i>
+    }
+
+    class NewsPage {
+        + date : DateField
+        + intro : TextField
+        + image : ImageChooser
+        + content : StreamField
+    }
+
+    class PartnersPage {
+        + intro : TextField
+        + content : StreamField
+        <i>(PartnerBlocks)</i>
+    }
+
+    class ExpertsPage {
+        + intro : TextField
+        + content : StreamField
+        <i>(ExpertBlocks)</i>
+    }
+
+    class ContactPage {
+        + address : CharField
+        + phone : CharField
+        + email : EmailField
+        + map_embed : TextField
+        + content : StreamField
+    }
+}
+
+' === HERITAGE APP PAGES ===
+package "heritage_objects.models" {
+    class HeritageObjectIndexPage {
+        + intro : TextField
+        + get_context()
+        __
+        <i>filters: live().child_of(self)</i>
+    }
+
+    class HeritageObjectPage {
+        + address : CharField
+        + lat/long : FloatField
+        + year_built : CharField
+        + style : CharField
+        + description : TextField
+        + gallery : StreamField
+        + content : StreamField
+        <i>(Video, Panorama, etc.)</i>
+    }
+}
+
+' === SNIPPETS ===
+package "Snippets" {
+    class FooterSettings {
+        + about_title/content
+        + address/phone/email
+        + social_links (VK, YT, TG)
+        + contact_person/position
+    }
+}
+
+' === STREAMFIELD BLOCKS ===
+package "Custom Blocks\n(wagtail.blocks)" {
+    class VideoBlock {
+        + title
+        + video_embed (RawHTML)
+    }
+    
+    class PanoramaBlock {
+        + title
+        + panorama_image
+    }
+
+    class PartnerBlock {
+        + name
+        + logo (Image)
+        + website_url
+    }
+
+    class ExpertBlock {
+        + name
+        + photo (Image)
+        + position/bio
+    }
+    
+    class ComparisonBlock {
+        + before_image
+        + after_image
+    }
+    
+    ' Other blocks can be added in a similar way
+    note bottom of ComparisonBlock
+      Also: AudioFile, Document,
+      News, ContactInfo Blocks
+    end note
+}
+
+' === INHERITANCE (Inheritance) ===
+BasePage <|-- HomePage
+BasePage <|-- AboutPage
+BasePage <|-- NewsIndexPage
+BasePage <|-- NewsPage
+BasePage <|-- PartnersPage
+BasePage <|-- ExpertsPage
+BasePage <|-- ContactPage
+
+BasePage <|-- HeritageObjectIndexPage
+BasePage <|-- HeritageObjectPage
+
+' === ASSOCIATIONS (Associations/Composition) ===
+' Pages use blocks through StreamField (aggregation)
+HomePage ..> VideoBlock : Содержит
+HeritageObjectPage ..> PanoramaBlock : Содержит
+PartnersPage ..> PartnerBlock : Содержит
+ExpertsPage ..> ExpertBlock : Содержит
+HeritageObjectPage ..> ComparisonBlock : Содержит
+
+' FooterSettings is used in the context of the site (usually through Settings)
+note right of FooterSettings
+  Доступ осуществляется через
+  wagtail.contrib.settings
+end note
+@enduml

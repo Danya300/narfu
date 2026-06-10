@@ -1,0 +1,18 @@
+{% load wagtailimages_tags wagtailcore_tags %}
+
+<div class="partner-block card mb-3">
+    <div class="card-body">
+        {% if value.logo %}
+        {% image value.logo width-200 class="card-img-top mb-3 img-fluid" %}
+        {% endif %}
+        <h5 class="card-title">{{ value.name }}</h5>
+        {% if value.description %}
+        <p class="card-text">{{ value.description }}</p>
+        {% endif %}
+        {% if value.website %}
+        <a href="{{ value.website }}" target="_blank" class="btn btn-sm btn-outline-primary">
+            Перейти на сайт
+        </a>
+        {% endif %}
+    </div>
+</div>

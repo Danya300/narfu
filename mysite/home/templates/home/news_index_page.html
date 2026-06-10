@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block body_class %}template-newsindexpage{% endblock %}
+
+{% block content %}
+{% include "home/includes/header.html" %}
+
+<main class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h1>{{ page.title }}</h1>
+
+            {% if page.intro %}
+            <div class="intro lead mb-4">
+                {{ page.intro|richtext }}
+            </div>
+            {% endif %}
+
+            <div class="news-list">
+                {% for news in news_pages %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                {% if news.image %}
+                                {% image news.image fill-150x150 class="img-fluid rounded" %}
+                                {% endif %}
+                                <small class="text-muted d-block mt-2">{{ news.date|date:"d.m.Y" }}</small>
+                            </div>
+                            <div class="col-md-9">
+                                <h4 class="card-title">
+                                    <a href="{% pageurl news %}" class="text-decoration-none">{{ news.title }}</a>
+                                </h4>
+                                {% if news.intro %}
+                                <p class="card-text">{{ news.intro }}</p>
+                                {% endif %}
+                                <a href="{% pageurl news %}" class="btn btn-sm btn-outline-primary">Читать далее</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p>Новостей пока нет.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</main>
+
+{% include "home/includes/footer.html" %}
+{% endblock %}

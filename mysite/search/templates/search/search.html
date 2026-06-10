@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags %}
+
+{% block body_class %}template-searchresults{% endblock %}
+
+{% block title %}Поиск{% endblock %}
+
+{% block content %}
+{% include "home/includes/header.html" %}
+
+<main class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h1>Поиск</h1>
+
+            <form action="{% url 'search' %}" method="get" class="mb-4">
+                <div class="input-group">
+                    <input type="text" name="query" class="form-control" {% if search_query %}
+                        value="{{ search_query }}" {% endif %} placeholder="Введите запрос...">
+                    <button type="submit" class="btn btn-primary">Найти</button>
+                </div>
+            </form>
+
+            {% if search_results %}
+            <ul class="list-group">
+                {% for result in search_results %}
+                <li class="list-group-item">
+                    <h4><a href="{% pageurl result %}">{{ result }}</a></h4>
+                    {% if result.search_description %}
+                    <p class="mb-0 text-muted">{{ result.search_description }}</p>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+
+            {% if search_results.has_previous %}
+            <a href="{% url 'search' %}?query={{ search_query|urlencode }}&page={{ search_results.previous_page_number }}"
+                class="btn btn-outline-primary mt-3">Назад</a>
+            {% endif %}
+
+            {% if search_results.has_next %}
+            <a href="{% url 'search' %}?query={{ search_query|urlencode }}&page={{ search_results.next_page_number }}"
+                class="btn btn-outline-primary mt-3">Далее</a>
+            {% endif %}
+            {% elif search_query %}
+            <div class="alert alert-info">Ничего не найдено</div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+{% include "home/includes/footer.html" %}
+{% endblock %}

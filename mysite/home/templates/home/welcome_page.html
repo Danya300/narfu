@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags wagtailuserbar %}
+
+{% block body_class %}template-welcomepage{% endblock %}
+
+{% block content %}
+{% include "home/includes/header.html" %}
+
+<main class="container my-5">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1>Добро пожаловать на сайт!</h1>
+            <p class="lead">Этот сайт посвящён сохранению исторического наследия.</p>
+
+            <div class="mt-5">
+                <h3>Навигация</h3>
+                <div class="row justify-content-center mt-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Объекты</h5>
+                                <p class="card-text">Просмотр исторических объектов наследия</p>
+                                <a href="/objects/" class="btn btn-primary">Перейти</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">О проекте</h5>
+                                <p class="card-text">Узнайте больше о проекте</p>
+                                <a href="/about/" class="btn btn-primary">Перейти</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Новости</h5>
+                                <p class="card-text">Последние новости проекта</p>
+                                <a href="/news/" class="btn btn-primary">Перейти</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <a href="{% url 'wagtailadmin_home' %}" class="btn btn-outline-primary">
+                    Перейти в админ-панель
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% include "home/includes/footer.html" %}
+{% endblock %}

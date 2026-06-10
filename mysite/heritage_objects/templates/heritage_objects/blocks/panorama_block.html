@@ -1,0 +1,62 @@
+{% load wagtailimages_tags %}
+
+<div class="panorama-block mb-4">
+    {% if value.title %}
+    <h4 class="mb-3">{{ value.title }}</h4>
+    {% endif %}
+
+    <div class="panorama-container" style="width: 100%; max-width: 100%; height: 500px; border-radius: 0.5rem; overflow: hidden; background: #000;">
+        <div id="panorama-{{ block.id }}" class="panorama-viewer" style="width: 100%; height: 100%;"></div>
+    </div>
+
+    {% if value.description %}
+    <div class="mt-2 text-muted small">
+        {{ value.description }}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    (function () {
+        var panoramaId = 'panorama-{{ block.id }}';
+        var panoramaEl = document.getElementById(panoramaId);
+        if (!panoramaEl) return;
+
+        // Проверяем, не инициализирован ли уже этот панорамный просмотр
+        if (panoramaEl.dataset.initialized === 'true') return;
+        panoramaEl.dataset.initialized = 'true';
+
+        // Получаем URL изображения панорамы (для Image используется file.url)
+        var panoramaUrl = '{{ value.panorama.file.url|escapejs }}';
+
+        // Ждём загрузки Pannellum, если он ещё не загружен
+        function initPanorama() {
+            if (typeof pannellum === 'undefined') {
+                setTimeout(initPanorama, 100);
+                return;
+            }
+
+            pannellum.viewer(panoramaId, {
+                "type": "equirectangular",
+                "panorama": panoramaUrl,
+                "autoLoad": true,
+                "autoRotate": -2,
+                "compass": false,
+                "showZoomCtrl": true,
+                "showFullscreenCtrl": true,
+                "hfov": 100,
+                "minHfov": 50,
+                "maxHfov": 120,
+                "vaov": 180,
+                "vOffset": 0,
+                "hotSpotDebug": false
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPanorama);
+        } else {
+            initPanorama();
+        }
+    })();
+</script>

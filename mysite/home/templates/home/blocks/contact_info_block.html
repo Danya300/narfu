@@ -1,0 +1,7 @@
+{% load wagtailcore_tags %}
+<div class="contact-item mb-2">
+    {% if self.icon %}
+    <i class="{{ self.icon }}"></i>
+    {% endif %}
+    <strong>{{ self.title }}:</strong> {{ self.value }}
+</div>

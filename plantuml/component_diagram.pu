@@ -1,0 +1,122 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam backgroundColor white
+skinparam shadowing false
+
+' Стили
+skinparam node {
+    BackgroundColor LightBlue
+    BorderColor DarkBlue
+}
+skinparam component {
+    BackgroundColor White
+    BorderColor Black
+}
+skinparam artifact {
+    BackgroundColor LightYellow
+    BorderColor Orange
+}
+
+title Архитектура проекта (Django + Wagtail CMS)
+
+' --- Клиент ---
+package "Клиентская часть (Frontend)" as Client {
+    [Browser] as Browser <<HTML5>>
+    note right of Browser
+      Bootstrap 5
+      Leaflet JS
+      Pannellum
+      img-slider
+    end note
+}
+
+' --- Бэкенд Контейнер ---
+node "Backend System" as Backend {
+    
+    ' Сервер
+    [ASGI/WGSI Server] as Server <<Daphne / Granian>>
+
+    package "Django Application Stack" as DjangoApp {
+        
+        package "Middleware Layer" as Middleware {
+            [Middleware Stack] as MW
+            note right of MW
+              Security
+              Sessions
+              CSRF
+              Auth
+              RangeRequest
+            end note
+        }
+
+        package "Routing & URL Resolution" as Routing {
+            [URL Resolver] as URLs <<mysite/urls.py>>
+            note right of URLs
+              /django-admin/ -> Admin
+              /admin/ -> Wagtail Admin
+              /search/ -> search.views
+              / -> Wagtail Page Serving
+            end note
+        }
+
+        package "Application Logic (Apps)" as Apps {
+            
+            component "home app\n(Pages CMS)" as HomeApp {
+                [HomePage]
+                [AboutPage]
+                [NewsPage]
+                [PartnersPage]
+                [ExpertsPage]
+                [ContactPage]
+                [FooterSetts]
+            }
+
+            component "heritage_objects app" as HeritageApp {
+                [HeritageObject Page]
+                [HeritageObject IndexPage]
+            }
+
+            component "search app" as SearchApp {
+                [Search View]
+            }
+        }
+
+        package "Wagtail Core" as WagtailCore {
+            [Wagtail Page Model Tree] as WagtailTree <<wagtailcore.Page>>
+            note right of WagtailTree
+              + specific subclasses
+            end note
+        }
+    }
+}
+
+' --- База данных ---
+database "Database" as DB {
+    [SQLite (dev) / PostgreSQL (prod)] as Database
+    note right of Database
+      wagtailcore_page
+      wagtailcore_pagerevision
+      wagtailimages_image
+      wagtaildocs_document
+      wagtailsearch_indexentry
+    end note
+}
+
+' --- Связи ---
+
+Browser --> Server : HTTP/HTTPS
+Server --> MW
+MW --> URLs
+
+URLs --> HomeApp
+URLs --> HeritageApp
+URLs --> SearchApp
+
+HomeApp --> WagtailTree
+HeritageApp --> WagtailTree
+SearchApp --> WagtailTree
+
+WagtailTree --> Database : ORM
+
+@enduml

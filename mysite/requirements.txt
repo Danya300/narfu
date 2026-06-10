@@ -1,0 +1,4 @@
+Django>=6,<6.1
+wagtail==7.3
+granian>=1.0
+daphne

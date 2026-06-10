@@ -1,0 +1,16 @@
+{% load wagtailimages_tags wagtailcore_tags %}
+
+<div class="expert-block card mb-3">
+    <div class="card-body">
+        {% if value.photo %}
+        {% image value.photo width-200 class="card-img-top mb-3 img-fluid" %}
+        {% endif %}
+        <h5 class="card-title">{{ value.name }}</h5>
+        {% if value.position %}
+        <p class="text-muted">{{ value.position }}</p>
+        {% endif %}
+        {% if value.bio %}
+        <p class="card-text">{{ value.bio }}</p>
+        {% endif %}
+    </div>
+</div>

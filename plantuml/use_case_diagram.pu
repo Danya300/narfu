@@ -1,0 +1,94 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam actor {
+    BackgroundColor LightBlue
+    BorderColor DarkBlue
+}
+skinparam usecase {
+    BackgroundColor White
+    BorderColor Black
+}
+skinparam rectangle {
+    BackgroundColor LightYellow
+    BorderColor Orange
+}
+
+title Диаграмма вариантов использования (Use Case Diagram)
+
+' Актёры
+actor "Гость\n(Неавторизованный пользователь)" as Guest
+actor "Контент-менеджер /\nАдминистратор" as Admin
+
+' Системная граница: Публичный сайт
+rectangle "Публичный сайт (Frontend)" as PublicSite {
+    
+    usecase "UC-1: Просмотр главной страницы\n(StreamField блоки)" as UC1
+    usecase "UC-2: Просмотр «О нас»\n(Текст + медиа)" as UC2
+    usecase "UC-7: Чтение новостей\n(Список по дате)" as UC7
+    usecase "UC-8: Просмотр страницы новости" as UC8
+    usecase "UC-9: Просмотр партнёров\n(Логотипы)" as UC9
+    usecase "UC-10: Просмотр экспертов\n(Список + таблица)" as UC10
+    usecase "UC-11: Просмотр контактов\n(Адрес, карта)" as UC11
+    
+    ' Группа: Объекты наследия и Карта
+    rectangle "Модуль Наследия" as HeritageModule {
+        usecase "UC-3: Список объектов\n(Карточки + Leaflet)" as UC3
+        usecase "UC-4: Детали объекта\n(Галерея, 360°, видео, до/после)" as UC4
+        usecase "UC-5: Интерактивная карта\n(Leaflet + кластеризация)" as UC5
+    }
+
+    ' Группа: Поиск и Медиа
+    rectangle "Поиск и Медиа" as SearchMediaModule {
+        usecase "UC-6: Полнотекстовый поиск" as UC6
+        usecase "UC-12: Перемотка аудио/видео\n(RangeRequestMiddleware)" as UC12
+    }
+}
+
+' Системная граница: Админ-панель Wagtail
+rectangle "Wagtail Admin / CMS" as AdminPanel {
+    usecase "UC-13: Вход в админку\n(/admin/)" as UC13
+    usecase "UC-14: Создание страницы\n(Page-объект любого типа)" as UC14
+    usecase "UC-15: Редактирование StreamField\n(Блоки контента)" as UC15
+    usecase "UC-19: Публикация / Снятие с публикации\n(Toggle live)" as UC19
+    usecase "UC-20: Редактирование футера\n(Snippet FooterSettings)" as UC20
+    
+    rectangle "Управление медиа" as MediaMgmt {
+        usecase "UC-16: Загрузка изображений\n(Wagtail Images, обрезка)" as UC16
+        usecase "UC-17: Загрузка панорам 360°\n(до 50 МБ)" as UC17
+        usecase "UC-18: Загрузка документов PDF\n(Wagtail Documents)" as UC18
+    }
+    
+    usecase "UC-21: Управление пользователями\n(Только Superuser)" as UC21
+}
+
+' Связи Гостя
+Guest --> UC1
+Guest --> UC2
+Guest --> UC7
+Guest --> UC8
+Guest --> UC9
+Guest --> UC10
+Guest --> UC11
+Guest --> UC3
+Guest --> UC4
+Guest --> UC5
+Guest --> UC6
+Guest --> UC12
+
+' Связи Администратора
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC19
+Admin --> UC20
+Admin --> UC16
+Admin --> UC17
+Admin --> UC18
+Admin --> UC21
+
+' Примечание: Администратор также может просматривать публичный сайт,
+' но основные Use Case для него — управление контентом.
+' Если нужно показать, что он тоже видит сайт, можно добавить:
+' Admin ..> PublicSite : View
+@enduml

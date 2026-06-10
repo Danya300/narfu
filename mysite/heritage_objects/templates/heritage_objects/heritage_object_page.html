@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block body_class %}template-heritageobjectpage{% endblock %}
+
+{% block extra_css %}
+<!-- img-comparison-slider CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
+<!-- Pannellum 360 panorama CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+<style>
+    .object-gallery .carousel-item img {
+        width: 100%;
+        height: 500px;
+        object-fit: cover;
+    }
+
+    .object-gallery .carousel-control-prev-icon,
+    .object-gallery .carousel-control-next-icon {
+        background-color: #0d6efd;
+        border-radius: 50%;
+        padding: 1.5rem;
+    }
+
+    .object-info-card {
+        position: sticky;
+        top: 20px;
+        z-index: 100;
+    }
+
+    @media (max-width: 991px) {
+        .object-info-card {
+            position: static;
+            margin-bottom: 1rem;
+        }
+    }
+
+    img-comparison-slider {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        display: block;
+    }
+
+    /* Стили для медиа из RichText */
+    .content-blocks video,
+    .content-blocks audio {
+        width: 100%;
+        max-width: 800px;
+        margin: 1rem 0;
+        border-radius: 0.375rem;
+    }
+
+    .content-blocks a[href$=".mp4"],
+    .content-blocks a[href$=".webm"],
+    .content-blocks a[href$=".mov"],
+    .content-blocks a[href$=".m4v"] {
+        display: block;
+        margin: 1rem 0;
+    }
+
+    .content-blocks a[href$=".mp3"],
+    .content-blocks a[href$=".wav"],
+    .content-blocks a[href$=".ogg"],
+    .content-blocks a[href$=".m4a"] {
+        display: block;
+        margin: 1rem 0;
+    }
+
+    /* Стили Pannellum */
+    .panorama-container .pnlm-render-container {
+        cursor: grab;
+    }
+    .panorama-container .pnlm-controls-container {
+        z-index: 1000;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- img-comparison-slider JS -->
+<script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
+<!-- Pannellum 360 panorama JS -->
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+<!-- Скрипт для автоматического создания плееров из ссылок на медиафайлы -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var contentBlocks = document.querySelectorAll('.content-blocks');
+
+        contentBlocks.forEach(function (container) {
+            // Находим все ссылки на видео файлы
+            var videoLinks = container.querySelectorAll('a[href$=".mp4"], a[href$=".webm"], a[href$=".mov"], a[href$=".m4v"]');
+            videoLinks.forEach(function (link) {
+                var video = document.createElement('video');
+                video.controls = true;
+                video.preload = 'auto';
+                video.src = link.href;
+                video.style.width = '100%';
+                video.style.maxWidth = '800px';
+                video.style.margin = '1rem 0';
+                video.style.borderRadius = '0.375rem';
+
+                // Получаем текст ссылки как название
+                var text = link.textContent || link.innerText;
+                if (text) {
+                    var title = document.createElement('p');
+                    title.textContent = text;
+                    title.style.fontWeight = 'bold';
+                    title.style.marginBottom = '0.5rem';
+                    link.parentNode.insertBefore(title, link);
+                }
+
+                link.parentNode.replaceChild(video, link);
+            });
+
+            // Находим все ссылки на аудио файлы
+            var audioLinks = container.querySelectorAll('a[href$=".mp3"], a[href$=".wav"], a[href$=".ogg"], a[href$=".m4a"]');
+            audioLinks.forEach(function (link) {
+                var audio = document.createElement('audio');
+                audio.controls = true;
+                audio.preload = 'auto';
+                audio.src = link.href;
+                audio.style.width = '100%';
+                audio.style.maxWidth = '800px';
+                audio.style.margin = '1rem 0';
+
+                // Получаем текст ссылки как название
+                var text = link.textContent || link.innerText;
+                if (text) {
+                    var title = document.createElement('p');
+                    title.textContent = text;
+                    title.style.fontWeight = 'bold';
+                    title.style.marginBottom = '0.5rem';
+                    link.parentNode.insertBefore(title, link);
+                }
+
+                link.parentNode.replaceChild(audio, link);
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+{% include "home/includes/header.html" %}
+
+<main class="container my-5">
+    <!-- Заголовок и основная информация -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>{{ page.title }}</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Основной контент -->
+        <div class="col-lg-8">
+            <!-- Галерея изображений -->
+            {% if page.gallery %}
+            <div class="object-gallery mb-4">
+                <div id="objectCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        {% for block in page.gallery %}
+                        <button type="button" data-bs-target="#objectCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
+                            {% if forloop.first %}class="active" {% endif %}></button>
+                        {% endfor %}
+                    </div>
+                    <div class="carousel-inner">
+                        {% for block in page.gallery %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            {% image block.value fill-1200x800 class="d-block w-100" %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#objectCarousel"
+                        data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Предыдущее</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#objectCarousel"
+                        data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Следующее</span>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Описание -->
+            {% if page.description %}
+            <div class="mb-4">
+                <h4>Описание</h4>
+                <p>{{ page.description }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Блоки контента -->
+            <div class="content-blocks">
+                {% for block in page.content %}
+                {% if block.block_type == 'heading' %}
+                <h2>{{ block.value }}</h2>
+                {% elif block.block_type == 'paragraph' %}
+                <div class="mb-4">{{ block.value|richtext }}</div>
+                {% elif block.block_type == 'image' %}
+                <div class="mb-4">
+                    {% image block.value fill-800x600 class="img-fluid rounded" %}
+                </div>
+                {% elif block.block_type == 'video' %}
+                {% include_block block %}
+                {% elif block.block_type == 'document' %}
+                {% include_block block %}
+                {% elif block.block_type == 'comparison' %}
+                {% include_block block %}
+                {% elif block.block_type == 'panorama' %}
+                {% include_block block %}
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Кнопка "Открыть карту" -->
+            {% if page.map_link %}
+            <div class="mb-4">
+                <a href="{{ page.map_link }}" target="_blank" class="btn btn-outline-primary">
+                    <i class="bi bi-geo-alt"></i> Открыть карту
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Боковая панель с информацией -->
+        <div class="col-lg-4">
+            <div class="card object-info-card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Информация об объекте</h5>
+                </div>
+                <div class="card-body">
+                    {% if page.address %}
+                    <div class="mb-3">
+                        <strong><i class="bi bi-geo-alt"></i> Адрес:</strong><br>
+                        {{ page.address }}
+                    </div>
+                    {% endif %}
+
+                    {% if page.phone %}
+                    <div class="mb-3">
+                        <strong><i class="bi bi-telephone"></i> Телефон:</strong><br>
+                        <a href="tel:{{ page.phone }}">{{ page.phone }}</a>
+                    </div>
+                    {% endif %}
+
+                    {% if page.year_built %}
+                    <div class="mb-3">
+                        <strong><i class="bi bi-calendar"></i> Год постройки:</strong><br>
+                        {{ page.year_built }}
+                    </div>
+                    {% endif %}
+
+                    {% if page.architectural_style %}
+                    <div class="mb-3">
+                        <strong><i class="bi bi-bank"></i> Архитектурный стиль:</strong><br>
+                        {{ page.architectural_style }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <a href="{% pageurl page.get_parent %}" class="btn btn-primary w-100">
+                        <i class="bi bi-arrow-left"></i> Назад к списку объектов
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% include "home/includes/footer.html" %}
+{% endblock %}

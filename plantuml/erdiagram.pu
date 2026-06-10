@@ -1,0 +1,182 @@
+@startuml
+' Настройка стилей для соответствия примеру и компактности A4
+skinparam backgroundColor white
+skinparam entity {
+    BackgroundColor White
+    BorderColor Black
+    FontSize 10
+    AttributeFontSize 9
+}
+skinparam relationship {
+    FontSize 9
+}
+skinparam legend {
+    BackgroundColor White
+    BorderColor None
+}
+
+' Направление сверху вниз для лучшей укладки на A4
+top to bottom direction
+
+title ER Диаграмма: Проект "Наследие" (Wagtail CMS)
+
+' === ОСНОВНЫЕ СУЩНОСТИ ===
+
+entity "Страница (Page)" as PAGE {
+    * id : PK
+    --
+    title
+    slug
+    path
+    depth
+    live : bool
+    first_published_at : date
+    content_type_id : FK
+}
+
+entity "Ревизия страницы" as REVISION {
+    * id : PK
+    --
+    created_at : datetime
+    content_json : text
+    user_id : FK
+}
+
+entity "Индекс поиска" as SEARCH_IDX {
+    * id : PK
+    --
+    object_id : FK
+    title
+    body : text
+    url
+}
+
+' === МЕДИА ===
+
+entity "Изображение" as IMAGE {
+    * id : PK
+    --
+    title
+    file : blob
+    width : int
+    height : int
+}
+
+entity "Документ" as DOC {
+    * id : PK
+    --
+    title
+    file : blob
+}
+
+' === СТРАНИЦЫ ПРИЛОЖЕНИЯ HOME (Слабые сущности) ===
+
+entity "Главная страница" as HOME_PAGE {
+    * page_ptr_id : PK, FK
+    --
+    content : json
+}
+
+entity "Страница 'О нас'" as ABOUT_PAGE {
+    * page_ptr_id : PK, FK
+    --
+    intro : text
+    content : json
+}
+
+entity "Страница контактов" as CONTACT_PAGE {
+    * page_ptr_id : PK, FK
+    --
+    address : string
+    phone : string
+    email : string
+    map_embed : text
+}
+
+entity "Страница партнеров" as PARTNERS_PAGE {
+    * page_ptr_id : PK, FK
+    --
+    intro : text
+    content : json
+}
+
+entity "Страница новости" as NEWS_PAGE {
+    * page_ptr_id : PK, FK
+    --
+    date : date
+    intro : text
+    content : json
+}
+
+entity "Список объектов наследия" as HERITAGE_IDX {
+    * page_ptr_id : PK, FK
+    --
+    intro : text
+}
+
+entity "Объект наследия" as HERITAGE_OBJ {
+    * page_ptr_id : PK, FK
+    --
+    address : string
+    phone : string
+    description : text
+    year_built : string
+    style : string
+    lat : float
+    lon : float
+    gallery : json
+    content : json
+}
+
+' === СНЕППЕТЫ ===
+
+entity "Настройки футера" as FOOTER {
+    * id : PK
+    --
+    about_title : string
+    about_content : text
+    contacts : json
+    social_links : json
+}
+
+' === СВЯЗИ (RELATIONSHIPS) ===
+
+' Ревизии: Одна страница имеет много ревизий
+PAGE ||--o{ REVISION : "имеет ревизии"
+
+' Поиск: Одна страница индексируется в поиске
+PAGE ||--o{ SEARCH_IDX : "индексируется как"
+
+' Изображения: Новость может иметь одно главное изображение
+NEWS_PAGE }o--|| IMAGE : "использует изображение"
+
+' Наследование/Типизация страниц:
+' Каждая конкретная страница является типом общей страницы PAGE.
+' В Django это реализуется через OneToOneField (page_ptr_id).
+' Используем ||--|| для обозначения строгой связи 1:1
+
+PAGE ||--|| HOME_PAGE : "является главной"
+PAGE ||--|| ABOUT_PAGE : "является 'О нас'"
+PAGE ||--|| CONTACT_PAGE : "является контактами"
+PAGE ||--|| PARTNERS_PAGE : "является партнерами"
+PAGE ||--|| NEWS_PAGE : "является новостью"
+PAGE ||--|| HERITAGE_IDX : "является списком объектов"
+PAGE ||--|| HERITAGE_OBJ : "является объектом"
+
+' Футер не связан напрямую с Page, это отдельная сущность (Snippet)
+note right of FOOTER
+  Доступен глобально
+  через wagtail.contrib.settings
+end note
+
+legend right
+    <b>Обозначения:</b>
+    * : Первичный ключ (PK)
+    FK : Внешний ключ
+    ||--|| : Связь один-к-одному (обязательная)
+    ||--o{ : Связь один-ко-многим (один к нулю или более)
+    }o--|| : Связь многие-к-одному (ноль или более к одному)
+    json : Данные StreamField (структурированный текст/медиа)
+endlegend
+
+@enduml

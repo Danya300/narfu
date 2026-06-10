@@ -1,0 +1,41 @@
+{% load wagtailcore_tags %}
+
+<div class="media-block mb-4">
+    {% if self.title %}
+    <h4 class="mb-3">{{ self.title }}</h4>
+    {% endif %}
+    
+    {% if self.description %}
+    <div class="mb-3 text-muted">{{ self.description|richtext }}</div>
+    {% endif %}
+    
+    {% with ext=self.media_file.url|slice:"-3:"|lower %}
+        {% if ext in "mp4,webm,ogg" %}
+            <!-- Видео -->
+            <div class="video-responsive ratio ratio-16x9 mb-3">
+                <video controls class="w-100 h-100" style="object-fit: contain;">
+                    <source src="{{ self.media_file.url }}" type="video/{{ ext }}">
+                    Ваш браузер не поддерживает видео тег.
+                </video>
+            </div>
+            
+        {% elif ext in "mp3,wav,m4a" %}
+            <!-- Аудио -->
+            <div class="p-3 bg-light rounded mb-3">
+                <audio controls class="w-100">
+                    <source src="{{ self.media_file.url }}" type="audio/{{ ext }}">
+                    Ваш браузер не поддерживает аудио тег.
+                </audio>
+            </div>
+            
+        {% else %}
+            <!-- Другой файл -->
+            <div class="alert alert-info">
+                <i class="bi bi-file-earmark"></i> 
+                <a href="{{ self.media_file.url }}" class="alert-link" download>
+                    Скачать файл: {{ self.media_file.url|slice:"-20:" }}
+                </a>
+            </div>
+        {% endif %}
+    {% endwith %}
+</div>
